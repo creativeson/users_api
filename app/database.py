@@ -19,4 +19,3 @@ Base = declarative_base()
 #     email TEXT NOT NULL UNIQUE,
 #     password TEXT NOT NULL
 # );
-
