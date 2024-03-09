@@ -1,28 +1,26 @@
-from fastapi import FastAPI, HTTPException,  Security
+from fastapi import FastAPI, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from models import User, get_user, get_user_by_email, create_user, update_user, delete_user
 from fastapi import Depends
+import jwt
+from datetime import datetime, timedelta
 
+# Initialize FastAPI application
 app = FastAPI()
 
-
+# Define Pydantic model for user input
 class UserInput(BaseModel):
     name: str
     email: str
     password: str
 
-
-import jwt
-from datetime import datetime, timedelta
-
-# 設定 JWT 密鑰和過期時間
+# Set JWT secret key and expiration time
 JWT_SECRET = 'your_secret_key'
 JWT_ALGORITHM = 'HS256'
-JWT_EXP_DELTA_SECONDS = 86400  # 一天有效期
+JWT_EXP_DELTA_SECONDS = 86400  # 24 hours expiration time
 
-
-# 函數來生成 JWT 標記
+# Function to generate JWT token
 def create_jwt_token(user_id: int):
     payload = {
         'user_id': user_id,
@@ -31,10 +29,7 @@ def create_jwt_token(user_id: int):
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
 
-
-
-
-
+# Endpoint to create a new user
 @app.post('/users', status_code=201)
 def create_user_view(user: UserInput):
     existing_user = get_user_by_email(user.email)
@@ -45,7 +40,7 @@ def create_user_view(user: UserInput):
     create_user(user)
     return {'message': 'User created'}
 
-
+# Endpoint to retrieve a user by user ID
 @app.get('/users/{user_id}')
 def get_user_view(user_id: int):
     user = get_user(user_id)
@@ -53,20 +48,20 @@ def get_user_view(user_id: int):
         return user
     raise HTTPException(status_code=404, detail='User not found')
 
-
+# Endpoint to update user information
 @app.put('/users/{user_id}')
 def update_user_view(user_id: int, user: UserInput):
     new_user = User(name=user.name, email=user.email, password=user.password)
     update_user(user_id, new_user)
     return {'message': 'User updated'}
 
-
+# Endpoint to delete a user
 @app.delete('/users/{user_id}')
 def delete_user_view(user_id: int):
     delete_user(user_id)
     return {'message': 'User deleted'}
 
-
+# Endpoint for user login
 @app.post('/login')
 def login(user: UserInput):
     user_data = get_user_by_email(user.email)
@@ -74,9 +69,11 @@ def login(user: UserInput):
         raise HTTPException(status_code=401, detail='Invalid email or password')
     token = create_jwt_token(user_data.id)
     return {'token': token}
+
+# Create HTTPBearer instance for token authentication
 security = HTTPBearer()
 
-
+# Function to verify JWT token
 def verify_jwt_token(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
@@ -88,20 +85,22 @@ def verify_jwt_token(token: str):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail='Invalid token')
 
+# Function to get current user based on token
 async def get_current_user(http_auth: HTTPAuthorizationCredentials = Security(security)):
     token = http_auth.credentials
     payload = verify_jwt_token(token)
     user_id = payload['user_id']
-    user = get_user(user_id)  # 假設你有一個函數`get_user`來根據user_id獲取用戶信息
+    user = get_user(user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-
+# Endpoint to retrieve current user
 @app.get('/member')
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+# Function to verify token for authentication
 async def verify_token(token: str):
     if not token:
         raise HTTPException(status_code=401, detail='Missing token')
@@ -113,8 +112,3 @@ async def verify_token(token: str):
     if user:
         return user
     raise HTTPException(status_code=404, detail='User not found')
-
-# @app.get('/me')
-# def get_current_user(user: User = Depends(verify_token)):
-#     return user
-
