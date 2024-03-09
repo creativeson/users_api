@@ -69,5 +69,4 @@ def delete_user(user_id):
     session.commit()
     session.close()
 
-
 Base.metadata.create_all(engine)
