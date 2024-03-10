@@ -1,3 +1,10 @@
+
+
+```bash
+uvicorn main:app --reload 
+```
+
+
 1. Create User
 Endpoint: POST /users
 Description: Create a new user.
