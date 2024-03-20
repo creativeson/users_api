@@ -1,7 +1,14 @@
 ___
-## activate
-
+## 2 way to activate API
+1.docker
 ```bash
+cd app
+docker compose up --build
+```
+___
+2.uvicorn
+```bash
+cd app
 uvicorn main:app --reload 
 ```
 ___
@@ -10,11 +17,12 @@ ___
 - Endpoint: POST /users
 - Description: Create a new user.
 - Request Body:
-  - name (str): Name of the user.
-  - email (str): Email of the user.
-  - password (str): Password of the user.
+  - name (str)
+  - email (str)
+  - password (str)
 - Response:
-- message (str): Confirmation message.
+  - success (bool)
+  - reason(str)
 - Status Codes:
   - 201: User created successfully.
   - 400: Email already registered.
@@ -54,10 +62,12 @@ ___
 - Endpoint: POST /login
 - Description: Authenticate user and generate JWT token.
 - Request Body:
-  - email (str): Email of the user.
-  - password (str): Password of the user.
+  - email (str)
+  - password (str)
 - Response:
+  - success (bool)
   - token (str): JWT token.
+  - reason(str)
 - Status Codes:
   - 200: Login successful.
   - 401: Invalid email or password.
