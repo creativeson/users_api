@@ -1,3 +1,6 @@
 .idea/
 app/__pycache__/
 *.pyc
+db/
+*.db
+README.Docker.md

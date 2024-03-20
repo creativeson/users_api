@@ -1,19 +1,42 @@
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
 from models import User, get_user, get_user_by_email, create_user, update_user, delete_user
 from fastapi import Depends
 import jwt
 from datetime import datetime, timedelta
+from pydantic import BaseModel, EmailStr, validator
+import re
 
-# Initialize FastAPI application
 app = FastAPI()
 
-# Define Pydantic model for user input
+
 class UserInput(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
+
+    @validator('name')
+    def username_validator(cls, name):
+        if len(name) < 3 or len(name) > 32:
+            raise ValueError('Username must be between 3 and 32 characters long')
+        return name
+
+    @validator('password')
+    def password_validator(cls, password):
+        if len(password) < 8 or len(password) > 32:
+            raise ValueError('Password must be between 8 and 32 characters long')
+
+        if not re.search(r'[A-Z]', password):
+            raise ValueError('Password must contain at least one uppercase letter')
+
+        if not re.search(r'[a-z]', password):
+            raise ValueError('Password must contain at least one lowercase letter')
+
+        if not re.search(r'\d', password):
+            raise ValueError('Password must contain at least one digit')
+
+        return password
+
 
 # Set JWT secret key and expiration time
 JWT_SECRET = 'your_secret_key'
@@ -40,13 +63,25 @@ def create_user_view(user: UserInput):
     create_user(user)
     return {'message': 'User created'}
 
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+
 # Endpoint to retrieve a user by user ID
 @app.get('/users/{user_id}')
 def get_user_view(user_id: int):
     user = get_user(user_id)
     if user:
-        return user
+        user_response = UserResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email
+        )
+        return user_response
     raise HTTPException(status_code=404, detail='User not found')
+
 
 # Endpoint to update user information
 @app.put('/users/{user_id}')
@@ -61,14 +96,26 @@ def delete_user_view(user_id: int):
     delete_user(user_id)
     return {'message': 'User deleted'}
 
+class LoginInput(BaseModel):
+    email: EmailStr
+    password: str
+
+# @app.post('/login')
+# def login(login_data: LoginInput):
+#     user_data = get_user_by_email(login_data.email)
+#     if not user_data or not user_data.check_password(login_data.password):
+#         raise HTTPException(status_code=401, detail='Invalid email or password')
+#     token = create_jwt_token(user_data.id)
+#     return {'token': token}
 # Endpoint for user login
 @app.post('/login')
-def login(user: UserInput):
+def login(user: LoginInput):
     user_data = get_user_by_email(user.email)
     if not user_data or not user_data.check_password(user.password):
-        raise HTTPException(status_code=401, detail='Invalid email or password')
+        # raise HTTPException(status_code=401, detail='Invalid email or password')
+        return {'success': False, 'reason': 'Invalid email or password'}
     token = create_jwt_token(user_data.id)
-    return {'token': token}
+    return {'success':True,'token': token}
 
 # Create HTTPBearer instance for token authentication
 security = HTTPBearer()
