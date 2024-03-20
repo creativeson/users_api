@@ -1,5 +1,5 @@
 ___
-## 2 way to activate API
+## Two ways to activate the API
 1.docker
 ```bash
 cd app
