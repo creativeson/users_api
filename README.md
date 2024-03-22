@@ -1,5 +1,5 @@
 ___
-## Two ways to activate the API
+## Three ways to activate the API
 1.docker
 ```bash
 cd app
@@ -12,6 +12,12 @@ cd app
 uvicorn main:app --reload 
 ```
 ___
+3. [docker hub](https://hub.docker.com/repository/docker/creativeson/user_api/general)
+   download the image
+```
+docker run -d --name app-server3 -p 8000:8000 creativeson/user_api 
+```
+
 Open following link to web ui or other test tool like postman
 ```
 http://localhost:8000/docs
