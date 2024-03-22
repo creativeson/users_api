@@ -12,6 +12,13 @@ cd app
 uvicorn main:app --reload 
 ```
 ___
+Open following link to web ui or other test tool like postman
+```
+http://localhost:8000/docs
+```
+
+___
+#
 
 1. Create User
 - Endpoint: POST /users
@@ -26,6 +33,16 @@ ___
 - Status Codes:
   - 201: User created successfully.
   - 400: Email already registered.
+- Sample data:
+
+```
+{
+  "name": "john",
+  "email": "user@example.com",
+  "password": "Johnjohn1"
+}
+```
+
 2. Get User
 - Endpoint: GET /users/{user_id}
 - Description: Retrieve user information by user ID.
@@ -49,6 +66,16 @@ ___
   - message (str): Confirmation message.
 - Status Codes:
   - 200: User updated successfully.
+ 
+- sample data:
+  - enter 1 in user_id fiels 
+  ```
+  {
+    "name": "john1",
+    "email": "user1@example.com",
+    "password": "Johnjohn1"
+  }
+  ```
 4. Delete User
 - Endpoint: DELETE /users/{user_id}
 - Description: Delete a user by user ID.
@@ -71,6 +98,14 @@ ___
 - Status Codes:
   - 200: Login successful.
   - 401: Invalid email or password.
+- sample data:
+  - enter 1 in user_id fiels 
+  ```
+  {
+    "email": "user1@example.com",
+    "password": "Johnjohn1"
+  }
+  ```
 6. Retrieve Current User
 - Endpoint: GET /member
 
